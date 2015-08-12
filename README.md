@@ -19,9 +19,10 @@ Use the supported environments as template to add your system.
 
 #### Usage ####
 
-The first argument passed from the CLI (if any) will be used to set the dependency. 
-Required :
+The first argument passed from the CLI (if any) will be used to set
+the dependency.
 
+Required:
 * General:
   - outdir = directory were outputs are saved
   - gmxdir = directory were gmx input files are saved
@@ -65,10 +66,13 @@ AdditionalControls="
    refcoord-scaling = all
 "
 
+____________________________________________________________________
+
 ### gmxcontinue ###
 
-Provide a quick way to restart gmx run in a tidy manner (directories gmxinput and output.$run are created for input and outputs respectively)
-Two system are supported:
+Provide a quick way to restart gmx run in a tidy manner (directories
+gmxinput and output.$run are created for input and outputs
+respectively) Two system are supported:
 - local machine
 - Cartesius (National Dutch Supercomputer, SLURM)
 Use the supported environments as template to add your system.
@@ -76,15 +80,20 @@ Use the supported environments as template to add your system.
 #### Usage ####
 
 Options:
-* -i : Prefix of trp and cpt files of the previous run;
-* -t : Additional time
+* -i : Checkpoint input file (.cpt) from the previous run
+* -b : Binary input file (.tpr) from the previous run
+* -t : Additional time (ps
 * -o : Outpref
 * -r : Run number
 * Queue options:
   + -d : Dependency (jobid)
-  + -c : N. Cores
+  + -n : N. nodes
+  + -c : N. Cores per node
   + -w : Walltime	
   + -h : Usage
+
+es. 
+gmxcontinue -i inname.cpt -b inname.tpr -t 50000 -r 2 -o outname
 
 
 

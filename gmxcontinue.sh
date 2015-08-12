@@ -1,25 +1,36 @@
 #!/bin/bash
 # Quickly restart gromacs jobs in a tidy way. 
 
+# gmx bin name (allow moving among versions)
+GMXCONVERTTPR="gmx convert-tpr"
+GMXMD="gmx mdrun"
+
 function usage () {
     echo "
 options:
 	-i)
-	    Inpref
+	    Checkpoint input file (.cpt)
+	-b)
+	    Bin input file (.tpr)
 	-t)
-	    Additional time
+	    Additional time (ps)
 	-o)
 	    outpref
 	-r)
 	    run number
 	-d)
 	    dependency (jobid)
+        -n)
+            N. nodes
 	-c)
-	    N. Cores
+	    N. cores per node
 	-w)
-	    Walltime	
+	    Walltime (hours)	
         -h)
 	    usage
+
+es. 
+gmxcontinue -i inname.cpt -b inname.tpr -t 50000 -r 2 -o outname
     "
 exit 0
 }
@@ -27,37 +38,61 @@ exit 0
 # ---------- Read CLI ------
 if [ $# == 0 ]; then usage; fi
 
+gmxdir=gmxinput
+outdir=output
+MDINIT="$GMXCONVERTTPR"
+MDRUN="$GMXMD"
+
 while [[ $# > 0 ]]
 do
     arg="$1"
 
     case $arg in
+	-r)
+	    run=".$2"
+	    outdir=output$run
+	    shift
+	    ;;
 	-i)
-	    inpref="$2"
+	    cpt="$2"
+	    MDRUN="$MDRUN -cpi $cpt"
+	    echo "cpt            :: $cpt" > gmxcontinue.log
+	    shift
+	    ;;
+	-b)
+	    tpr="$2"
+	    MDINIT="$MDINIT -s $tpr"
+	    echo "tpr            :: $tpr" > gmxcontinue.log
 	    shift
 	    ;;
 	-t)
 	    Extime="$2"
+	    MDINIT="$MDINIT -extend $Extime"
+	    echo "Extended time  :: $Extime" >> gmxcontinue.log 
 	    shift
 	    ;;
 	-o)
 	    outpref="$2"
-	    shift
-	    ;;
-	-r)
-	    run=".$2"
+	    MDINIT="$MDINIT -o ${gmxdir}/$outpref.tpr"
+	    MDRUN="$MDRUN -s ${gmxdir}/$outpref.tpr -deffnm ${outdir}/$outpref"
+	    echo "new prefix     :: $outpref">> gmxcontinue.log
 	    shift
 	    ;;
 	-d)
 	    SBATCHFLAGS="$SBATCHFLAGS --dependency=afterany:$2"
+	    echo "Starting after     :: $2">> gmxcontinue.log
+	    shift
+	    ;;
+	-n)
+	    nnodes="$2"
 	    shift
 	    ;;
 	-c)
-	    NCORES="$2"
+	    nc_ncores="$2"
 	    shift # past argument
 	    ;;
 	-w)
-	    WALLTIME="$2"
+	    walltime="$2"
 	    shift # past argument
 	    ;;
 	-h)
@@ -74,62 +109,67 @@ do
     shift # past argument or value
 done
 
-if [ -z $inpref ]
+if [[ -z $cpt || -z $tpr ]]
 then 
-    echo "tpr/cpt prefix required" >&2
+    echo "tpr/cpt required" >&2
+    usage
+    exit 1
 fi
 if [ -z $Extime ];
 then 
     echo "Extended time required" >&2
+    usage
+    exit 1
 fi
 if [ -z $outpref ];
 then 
     echo "new prefix required" >&2
+    usage
+    exit 1
 fi
-
-echo "tpr/cpt prefix :: $inpref" > gmxcontinue.log
-echo "Extended time  :: $Extime" >> gmxcontinue.log 
-echo "new prefix     :: $outpref">> gmxcontinue.log
-echo "outdir         :: $outdir" >> gmxcontinue.log
-echo "gmx commands:              
-gmx tpbconv -s $inpref.tpr -extend $Extime -o $outpref.tpr
-gmx mdrun -s $outpref.tpr -cpi $inpref.cpt -deffnm $outpref" >> gmxcontinue.log
-
 # ==================================================
 
 
-gmxdir=gmxinput
-outdir=output$run
+# echo commands
+echo "gmx commands:              
+$MDINIT
+$MDRUN
+" >> gmxcontinue.log
 
-mkdir -p gmxdir $outdir
 
+# ==================================================
+#  DOING the JOB
+mkdir -p $gmxdir $outdir
 # prepare restart
-gmx tpbconv -s $inpref.tpr -extend $Extime -o ${gmxdir}/$outpref.tpr
+$MDINIT
 
 # submit
-
 if [ $(hostname | cut -d. -f2) == cartesius ]; then
 
-sbatch $SBATCHFLAGS <<EOF
+    WT=${walltime:=120}
+    MDRUN="$MDRUN -maxh $WT"
+
+cat > slurm.sub <<EOF
 #!/bin/bash
 #SBATCH --job-name=QDMD${run}
 #SBATCH --output=QDMD.txt
 #
-#SBATCH -N $nnodes
-#SBATCH --tasks-per-node $nc_nodes
-#SBATCH -t ${walltime}:00:00
+#SBATCH -N ${nnodes:=4}
+#SBATCH --tasks-per-node ${nc_nodes:=24}
+#SBATCH -t ${WT:=120}:00:00
 
 # for test, scratch not supported
-srun gmx mdrun -maxh $walltime -s $gmxdir/$outname.tpr -cpi $inpref.cpt -deffnm ${outdir}/$outpref &> $outdir/${outpref}.log.mdrun
+srun $MDRUN &> $outdir/${outpref}.log.mdrun
 
 exit 0
 
 EOF
 
+sbatch $SBATCHFLAGS slurm.sub
 
 else
     # local machine
-    mpirun -np 3 gmx mdrun -s gmxinput/$outpref.tpr -cpi $inpref.cpt -deffnm ${outdir}/$outpref &> $outdir/${outpref}.log.mdrun
+    mpirun -np 3 $MDRUN &> $outdir/${outpref}.log.mdrun
 fi
 
 exit 0
