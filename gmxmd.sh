@@ -1,5 +1,60 @@
 #!/bin/bash
-# 
+# Author :: Salvatore M Cosseddu 2015
+# Description :: quickly generate input file for MD simulations with gromacs and run simulations. Three system are supported:
+#               - local machine
+#               - Cartesius (National Dutch Supercomputer)
+#               - Bazis     (VU University Cluster)
+#               Use the supported environments as template to add your system.
+# Usage ::
+# The first argument passed from the CLI (if any) will be used to set the dependency. 
+# Required :
+
+# * General:
+#   - outdir = directory were outputs are saved
+#   - gmxdir = directory were gmx input files are saved
+#   - outname = prefix of the output file passed to -deffnm
+
+# * System definition : 
+#   - struc_file = Structure of the simulated system
+#   - top_file = topology file
+
+# Optional :
+# * Queue system 
+#   - walltime
+#   - nnodes = number of nodes
+#   - nc_nodes = cores per node
+ 
+# * Simulation 
+#   - min = minimisation steps 			# overprint runstep
+#   or
+#   - runsteps = number of MD steps 
+#   - dt = time step size (ps)
+# * Includes
+#   - include = includes for grompp (-I, see gmx manual)
+# * Ensemble
+#   - T = Temperature
+#   - thermostat (default  v-scale)
+#   - genT = Temperature to generate initial velocities
+#   - taut (default 2)
+#   - p = Pressure
+#   - barostat (default Parrinello-Rahman)
+#   - taup (default 5)
+#   - compressibility (default 10e-5)
+# * Outputs
+#   - out_positions = interval to write positions (defalult 1000)
+#   - out_velocities = interval to write velocities (default 0)
+#   - out_log = interval to writing logs (defalult 1000)
+# * Others
+#   - constraints = es. h-bonds (default none) 
+#   - AdditionalFlags = for mdrun (es \"-n ${inpdir}/qd_lig_s.ndx\") 
+#   - AdditionalControls= additional lines to be included in the mdp file (es.
+# AdditionalControls=\"
+#    refcoord-scaling = all
+# \"
+
+
+# ==================================================
+#     START INPUTS
 
 # File names
 inpdir=../input
@@ -13,11 +68,6 @@ outname=CdSe_oleateMD
 walltime=1
 nnodes=4
 nc_nodes=24
-if [ -z $1 ];
-then
-    # dependency supported only for slurm (cartesius)
-    SBATCHFLAGS="--dependency=afterok:$1"
-fi
     
 # simulation ----------
 #min=5000			# overprint runstep
@@ -37,7 +87,7 @@ p=1.01325
 # thermostat=berendsen            # default  v-scale
 # taup=0.8
 # taut=0.5
-
+compressibility=10e-5 # dichloromethane
 
 # restraints
 constraints=h-bonds 	        # default none 
@@ -54,6 +104,12 @@ out_log=1000
 
 # ====================================================================================================
 #                                        Input finished 
+
+if [ -z $1 ];
+then
+    # dependency supported only for slurm (cartesius)
+    SBATCHFLAGS="--dependency=afterok:$1"
+fi
 
 # -------------------------------
 #  INTEGRATOR CONTROL 
@@ -133,12 +189,12 @@ ns-type 		 = grid
 # OUTPUT FREQUENCIES 
 output_freqs="
 ;frequency to write coordinates to output trajectory file
-nstxout 		 = $out_positions   
+nstxout 		 = ${out_positions:=1000}   
 nstvout 		 = ${out_velocities:=0}
 ;frequency to write energies to log file
-nstlog  		 = $out_log
+nstlog  		 = ${out_log:=1000}
 ;frequency to write energies to energy file
-nstenergy		 = $out_log
+nstenergy		 = ${out_log:=1000}
 ;group(s) to write to energy file 
 energygrps		 = System  
 "
@@ -169,7 +225,7 @@ if [ $p ]; then
 pcoupl  		 = ${barostat:=Parrinello-Rahman}
 pcoupltype		 = isotropic
 tau-p			 = ${taup:=5}
-compressibility 	 = 10e-5 # dichloromethane
+compressibility 	 = ${compressibility:=10e-5} 
 ref-p			 = $p
 "
 fi
