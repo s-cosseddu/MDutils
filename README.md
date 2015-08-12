@@ -38,7 +38,7 @@ Optional :
   - nc_nodes = cores per node
  
 * Simulation 
-  - min = minimisation steps 			# overprint runstep
+  - min = minimisation steps
   or
   - runsteps = number of MD steps 
   - dt = time step size (ps)
@@ -61,7 +61,30 @@ Optional :
   - constraints = es. h-bonds (default none) 
   - AdditionalFlags = for mdrun (es \"-n ${inpdir}/qd_lig_s.ndx\") 
   - AdditionalControls= additional lines to be included in the mdp file (es.
-AdditionalControls=\"
+AdditionalControls="
    refcoord-scaling = all
-\"
+"
+
+### gmxcontinue ###
+
+Provide a quick way to restart gmx run in a tidy manner (directories gmxinput and output.$run are created for input and outputs respectively)
+Two system are supported:
+- local machine
+- Cartesius (National Dutch Supercomputer, SLURM)
+Use the supported environments as template to add your system.
+
+#### Usage ####
+
+Options:
+* -i : Prefix of trp and cpt files of the previous run;
+* -t : Additional time
+* -o : Outpref
+* -r : Run number
+* Queue options:
+  + -d : Dependency (jobid)
+  + -c : N. Cores
+  + -w : Walltime	
+  + -h : Usage
+
+
 

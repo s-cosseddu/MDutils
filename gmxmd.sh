@@ -25,7 +25,7 @@
 #   - nc_nodes = cores per node
  
 # * Simulation 
-#   - min = minimisation steps 			# overprint runstep
+#   - min = minimisation steps 			
 #   or
 #   - runsteps = number of MD steps 
 #   - dt = time step size (ps)
