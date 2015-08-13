@@ -1,7 +1,7 @@
-GMXMD
-=====
+MDutils
+=======
 
-General scripts to manage Molecular Dynamics calculations with GROMACS  
+General scripts to manage Molecular Dynamics calculations
 
 Author
 ------
