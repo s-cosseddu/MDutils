@@ -1,0 +1,29 @@
+###################################################################################
+#: Title       : parseCHARMMpar  						  #
+#: Author      : Salvatore Cosseddu - S.M.Cosseddu@warwick.ac.uk		  #
+#: Institution : University of Warwick - Centre for Scientific Computing and	  #
+#                                        School of Engineering			  #
+#: Description : parseCHARMMpar parse parameter file to extract lj parameter      #
+#                to set the VdW radii in VMD for every type of atom.              #
+#: Date Created: Wed Dec 14 18:23:14 GMT 2011					  #
+#: Last Edit   : Wed Dec 14 18:23:14 GMT 2011    				  #
+#: Version     : 1.00								  #
+# 										  #
+#										  #
+#  COPYRIGHT					       				  #
+#  Copyright © 2010 Salvatore Cosseddu		       				  #
+#  Centre for Scientific Computing, University of Warwick.		       	  #
+#  License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>. #
+#  This is free software: you are free to change and redistribute it.         	  #
+#  There is NO WARRANTY, to the extent permitted by law.          		  #
+#										  #
+###################################################################################
+
+Parse CHARMM parameter file to get LJ parameters. Replace VMD VdW radii with Rmin/2.  
+
+USAGE
+
+::parseCHARMMpar::VdWassign <molID> <CHARMM parameter file>
+
+molID is the the VMD internal index for the "molecule" (e.g. "top", 0, 1, 2...) 
+Check VMD manual. 

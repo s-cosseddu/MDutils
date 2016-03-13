@@ -1,0 +1,33 @@
+###################################################################################
+#: Title       : VMD macros 							  #
+#: Author      : Salvatore Cosseddu - S.M.Cosseddu@warwick.ac.uk		  #
+#: Institution : University of Warwick - Centre for Scientific Computing and	  #
+#                                        School of Engineering			  #
+#: Description : Macros for VMD selection  	   				  #
+#: Date Created: Thu Feb  2 11:33:20 GMT 2012					  #
+#: Last Edit   : Thu Feb  2 11:33:20 GMT 2012    				  #
+#: Version     : 1.00								  #
+# 										  #
+#										  #
+#  COPYRIGHT					       				  #
+#  Copyright © 2010 Salvatore Cosseddu		       				  #
+#  Centre for Scientific Computing, University of Warwick.		       	  #
+#  License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>. #
+#  This is free software: you are free to change and redistribute it.         	  #
+#  There is NO WARRANTY, to the extent permitted by law.          		  #
+#										  #
+###################################################################################
+
+
+USAGE:
+    
+    source macro.tcl
+    
+    then use the different macro in the atom selections (i.g. [atomselect top "<macro>"] or in the representations
+
+
+MACROs AVAILABLE:
+
+- popchead 
+- popctail
+- kcsafilter 
